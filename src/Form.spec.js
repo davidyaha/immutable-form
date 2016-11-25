@@ -26,6 +26,7 @@ describe('Form', () => {
       expect(form).to.eql(undefined);
     });
     it('must have a name', () => {
+      expect(() => new Form()).to.throw(Error);
       expect(() => new Form('')).to.throw(Error);
       expect(() => new Form(' ')).to.throw(Error);
     });
