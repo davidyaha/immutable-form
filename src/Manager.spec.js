@@ -7,20 +7,23 @@ import Manager from './Manager';
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
 
+const form = {
+  name: 'test',
+};
+
 describe('Manager', () => {
   it('add', () => {
-    const form = {
-      name: 'test',
-    };
     Manager.add(form);
     expect(Manager.get('test').name).to.eql('test');
   });
   it('remove', () => {
-    const form = {
-      name: 'test',
-    };
     Manager.add(form);
     Manager.remove('test');
     expect(Manager.get('test')).to.eql(undefined);
+  });
+  it('reset', () => {
+    Manager.add(form);
+    Manager.reset();
+    expect(Manager.forms.size).to.eql(0);
   });
 });
