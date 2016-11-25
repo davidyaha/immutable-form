@@ -43,5 +43,10 @@
     "sinon-chai": "^2.8.0",
     "webpack": "^1.13.3",
     "webpack-node-externals": "^1.5.4"
+  },
+  "dependencies": {
+    "immutable": "^3.8.1",
+    "redux": "^3.6.0",
+    "redux-immutable": "^3.0.8"
   }
 }
