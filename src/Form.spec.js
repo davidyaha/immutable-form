@@ -3,6 +3,7 @@
 import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
 import chaiAsPromised from 'chai-as-promised';
+import { Map, Stack } from 'immutable';
 import Form from './Form';
 import Manager from './Manager';
 
@@ -95,6 +96,57 @@ describe('Form', () => {
       const field = form.getField('field1');
       expect(field.get('value')).to.eql('');
       expect(field.get('errors').size).to.eql(0);
+    });
+  });
+  describe('errors', () => {
+    it('add error', () => {
+      const form = new Form('form');
+      form.addError('error1');
+      expect(form.getState().get('errors').first()).to.eql('error1');
+    });
+    it('clear errors', () => {
+      const form = new Form('form');
+      form.addError('error1');
+      form.clearErrors();
+      expect(form.getState().get('errors').size).to.eql(0);
+    });
+    it('has errors - form level', () => {
+      const form = new Form('form');
+      form.addError('error1');
+      expect(form.hasErrors()).to.eql(true);
+    });
+    it('has errors - field level', () => {
+      const form = new Form('form');
+      form.setField('field1', {
+        value: 'value1',
+        error: 'error1',
+      });
+      expect(form.hasErrors()).to.eql(true);
+    });
+    it('has errors - form and filed', () => {
+      const form = new Form('form');
+      form.setField('field1', {
+        value: 'value1',
+        error: 'error1',
+      });
+      const field = form.getField('field1');
+      expect(field.get('errors').first()).to.eql('error1');
+      expect(form.hasErrors()).to.eql(true);
+    });
+  });
+  describe('form', () => {
+    it('reset', () => {
+      const form = new Form('form');
+      form.setField('field1', {
+        value: 'value1',
+        error: 'error1',
+      });
+      form.resetForm();
+      const state = form.getState();
+      expect(state).to.eql(Map({
+        fields: Map(),
+        errors: Stack(),
+      }));
     });
   });
 });
