@@ -85,13 +85,13 @@ describe('Form', () => {
       form.removeField('field1');
       expect(form.getField('field1')).to.eql(undefined);
     });
-    it('clear field', () => {
+    it('reset field', () => {
       const form = new Form('form');
       form.setField('field1', {
         value: 'value1',
         error: 'error1',
       });
-      form.clearField('field1');
+      form.resetField('field1');
       const field = form.getField('field1');
       expect(field.get('value')).to.eql('');
       expect(field.get('errors').size).to.eql(0);

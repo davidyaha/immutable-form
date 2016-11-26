@@ -9,7 +9,7 @@ const ADD_ERROR = `${PATH}ADD_ERROR`;
 const SET_LOADING = `${PATH}SET_LOADING`;
 const SET_FIELD = `${PATH}SET_FIELD`;
 const REMOVE_FIELD = `${PATH}REMOVE_FIELD`;
-const CLEAR_FIELD = `${PATH}/CLEAR_FIELD`;
+const RESET_FIELD = `${PATH}/RESET_FIELD`;
 const CLEAR_ERRORS = `${PATH}CLEAR_ERRORS`;
 
 const defaultOptions = {
@@ -43,7 +43,7 @@ const createReducer = initialState =>
         }
         return nextState;
       }
-      case CLEAR_FIELD: {
+      case RESET_FIELD: {
         const { field } = action.payload;
         return state.setIn(['fields', field], defaultField);
       }
@@ -102,9 +102,9 @@ class Form {
       },
     });
   }
-  clearField(field) {
+  resetField(field) {
     this.store.dispatch({
-      type: CLEAR_FIELD,
+      type: RESET_FIELD,
       payload: {
         field,
       },
