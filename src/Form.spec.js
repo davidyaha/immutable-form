@@ -54,6 +54,28 @@ describe('Form', () => {
       expect(field.get('errors').first()).to.eql('error1');
       expect(field.get('warnings').first()).to.eql('warning1');
     });
+    it('clears errors and warnings if passed null', () => {
+      const form = new Form('form');
+      form.setField('field1', {
+        value: 'value1',
+        error: 'error1',
+        warning: 'warning1',
+      });
+      form.setField('field1', {
+        error: 'error2',
+        warning: 'warning2',
+      });
+      let field = form.store.getState().getIn(['form', 'fields', 'field1']);
+      expect(field.get('errors').size).to.eql(2);
+      expect(field.get('warnings').size).to.eql(2);
+      form.setField('field1', {
+        error: null,
+        warning: null,
+      });
+      field = form.store.getState().getIn(['form', 'fields', 'field1']);
+      expect(field.get('errors').size).to.eql(0);
+      expect(field.get('warnings').size).to.eql(0);
+    });
     it('get field', () => {
       const form = new Form('form');
       form.setField('field1', {
@@ -61,6 +83,27 @@ describe('Form', () => {
       });
       const field = form.getField('field1');
       expect(field.get('value')).to.eql('value1');
+    });
+    it('remove field', () => {
+      const form = new Form('form');
+      form.setField('field1', {
+        value: 'value1',
+      });
+      form.removeField('field1');
+      expect(form.getField('field1')).to.eql(undefined);
+    });
+    it('clear field', () => {
+      const form = new Form('form');
+      form.setField('field1', {
+        value: 'value1',
+        error: 'error1',
+        warning: 'warning1',
+      });
+      form.clearField('field1');
+      const field = form.getField('field1');
+      expect(field.get('value')).to.eql('');
+      expect(field.get('errors').size).to.eql(0);
+      expect(field.get('warnings').size).to.eql(0);
     });
   });
 });

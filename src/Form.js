@@ -9,6 +9,7 @@ const ADD_ERROR = `${PATH}ADD_ERROR`;
 const SET_LOADING = `${PATH}SET_LOADING`;
 const SET_FIELD = `${PATH}SET_FIELD`;
 const REMOVE_FIELD = `${PATH}REMOVE_FIELD`;
+const CLEAR_FIELD = `${PATH}/CLEAR_FIELD`;
 const CLEAR_ERRORS = `${PATH}CLEAR_ERRORS`;
 
 const defaultOptions = {
@@ -29,19 +30,33 @@ const createReducer = initialState =>
       case SET_FIELD: {
         const { field, value, error, warning } = action.payload;
         const path = ['fields', field];
-        let nextState = state.setIn(path, defaultField);
+        let nextState = state.hasIn(path) ? state : state.setIn(path, defaultField);
         if (value) {
           nextState = nextState.setIn([...path, 'value'], value);
         }
         if (error) {
           const errorsStack = nextState.getIn([...path, 'errors']).push(error);
           nextState = nextState.setIn([...path, 'errors'], errorsStack);
+        } else if (error === null) {
+          const errorsStack = nextState.getIn([...path, 'errors']).clear();
+          nextState = nextState.setIn([...path, 'errors'], errorsStack);
         }
         if (warning) {
           const warningsStack = nextState.getIn([...path, 'warnings']).push(warning);
           nextState = nextState.setIn([...path, 'warnings'], warningsStack);
+        } else if (warning === null) {
+          const warningsStack = nextState.getIn([...path, 'warnings']).clear();
+          nextState = nextState.setIn([...path, 'warnings'], warningsStack);
         }
         return nextState;
+      }
+      case CLEAR_FIELD: {
+        const { field } = action.payload;
+        return state.setIn(['fields', field], defaultField);
+      }
+      case REMOVE_FIELD: {
+        const { field } = action.payload;
+        return state.deleteIn(['fields', field]);
       }
       default:
         break;
@@ -87,6 +102,17 @@ class Form {
   removeField(field) {
     this.store.dispatch({
       type: REMOVE_FIELD,
+      payload: {
+        field,
+      },
+    });
+  }
+  clearField(field) {
+    this.store.dispatch({
+      type: CLEAR_FIELD,
+      payload: {
+        field,
+      },
     });
   }
   addError(error) {
