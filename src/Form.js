@@ -28,7 +28,7 @@ const createReducer = initialState =>
   (state = initialState, action) => {
     switch (action.type) {
       case SET_FIELD: {
-        const { field, value, error, warning } = action.payload;
+        const { field, value, error } = action.payload;
         const path = ['fields', field];
         let nextState = state.hasIn(path) ? state : state.setIn(path, defaultField);
         if (value) {
@@ -40,13 +40,6 @@ const createReducer = initialState =>
         } else if (error === null) {
           const errorsStack = nextState.getIn([...path, 'errors']).clear();
           nextState = nextState.setIn([...path, 'errors'], errorsStack);
-        }
-        if (warning) {
-          const warningsStack = nextState.getIn([...path, 'warnings']).push(warning);
-          nextState = nextState.setIn([...path, 'warnings'], warningsStack);
-        } else if (warning === null) {
-          const warningsStack = nextState.getIn([...path, 'warnings']).clear();
-          nextState = nextState.setIn([...path, 'warnings'], warningsStack);
         }
         return nextState;
       }
@@ -85,14 +78,16 @@ class Form {
       Manager.add(this);
     }
   }
-  setField(field, { value, error, warning }) {
+  getState() {
+    return this.store.getState().get('form');
+  }
+  setField(field, { value, error }) {
     this.store.dispatch({
       type: SET_FIELD,
       payload: {
         field,
         value,
         error,
-        warning,
       },
     });
   }
@@ -116,21 +111,17 @@ class Form {
     });
   }
   addError(error) {
-
-  }
-  addWarning(warning) {
-
+    this.store.dipsatch({
+      type: ADD_ERROR,
+      payload: {
+        error,
+      },
+    });
   }
   clearErrors() {
 
   }
-  clearWarnings() {
-
-  }
   hasErrors() {
-
-  }
-  hasWarnings() {
 
   }
 }
