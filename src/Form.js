@@ -70,7 +70,7 @@ class Form {
       Manager.add(this);
     }
   }
-  setField({ field, value, error, warning }) {
+  setField(field, { value, error, warning }) {
     this.store.dispatch({
       type: SET_FIELD,
       payload: {
