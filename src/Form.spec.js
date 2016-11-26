@@ -30,5 +30,31 @@ describe('Form', () => {
       expect(() => new Form('')).to.throw(Error);
       expect(() => new Form(' ')).to.throw(Error);
     });
+    it('can use initial state', () => {
+    });
+  });
+  describe('setField', () => {
+    it('set field value', () => {
+      const form = new Form('form');
+      form.setField({
+        field: 'field1',
+        value: 'value1',
+      });
+      const field = form.store.getState().getIn(['form', 'fields', 'field1']);
+      expect(field.get('value')).to.eql('value1');
+    });
+    it('sets field value, errors, and warnings', () => {
+      const form = new Form('form');
+      form.setField({
+        field: 'field1',
+        value: 'value1',
+        error: 'error1',
+        warning: 'warning1',
+      });
+      const field = form.store.getState().getIn(['form', 'fields', 'field1']);
+      expect(field.get('value')).to.eql('value1');
+      expect(field.get('errors').first()).to.eql('error1');
+      expect(field.get('warnings').first()).to.eql('warning1');
+    });
   });
 });
