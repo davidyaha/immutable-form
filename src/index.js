@@ -1,7 +1,7 @@
 import Form from './Form';
-import Manager from './Manager';
+import FormCollection from './FormCollection';
 import ReactForm from './ReactForm';
 
 export { Form };
-export { Manager };
+export { FormCollection };
 export { ReactForm };

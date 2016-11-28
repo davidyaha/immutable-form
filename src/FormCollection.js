@@ -1,6 +1,6 @@
 import { Map } from 'immutable';
 
-const Manager = {
+const FormCollection = {
   forms: Map({}),
   add(form) {
     this.forms = this.forms.set(form.name, form);
@@ -16,4 +16,4 @@ const Manager = {
   },
 };
 
-export default Manager;
+export default FormCollection;

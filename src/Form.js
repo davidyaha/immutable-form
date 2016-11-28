@@ -1,6 +1,6 @@
 import { Map, Stack } from 'immutable';
 import createLogger from 'redux-logger';
-import Manager from './Manager';
+import FormCollection from './FormCollection';
 import createStore from './createStore';
 
 const PATH = 'immutable-form/';
@@ -14,7 +14,7 @@ const REMOVE_FIELD = `${PATH}REMOVE_FIELD`;
 const RESET_FIELD = `${PATH}/RESET_FIELD`;
 
 const defaultOptions = {
-  addToManager: true,
+  addToFormCollection: true,
   logging: true,
   store: null,
 };
@@ -90,8 +90,8 @@ class Form {
       },
       middleware,
     });
-    if (options.addToManager) {
-      Manager.add(this);
+    if (options.addToFormCollection) {
+      FormCollection.add(this);
     }
   }
   getState() {

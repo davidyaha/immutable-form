@@ -5,7 +5,7 @@ import sinonChai from 'sinon-chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Map, Stack } from 'immutable';
 import Form from './Form';
-import Manager from './Manager';
+import FormCollection from './FormCollection';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -13,17 +13,17 @@ chai.use(chaiAsPromised);
 describe('Form', () => {
   describe('constructor', () => {
     beforeEach(() => {
-      Manager.reset();
+      FormCollection.reset();
     });
-    it('adds itself to Manager on initialization', () => {
+    it('adds itself to FormCollection on initialization', () => {
       new Form('test');
-      const form = Manager.get('test');
+      const form = FormCollection.get('test');
       expect(form).to.be.ok;
       expect(form.name).to.eql('test');
     });
-    it('does not add itself to Manager if option is disabled', () => {
-      new Form('test', null, { addToManager: false });
-      const form = Manager.get('test');
+    it('does not add itself to FormCollection if option is disabled', () => {
+      new Form('test', null, { addToFormCollection: false });
+      const form = FormCollection.get('test');
       expect(form).to.eql(undefined);
     });
     it('must have a name', () => {
