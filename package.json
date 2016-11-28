@@ -41,6 +41,7 @@
     "istanbul": "^1.1.0-alpha.1",
     "lodash": "^4.17.2",
     "mocha": "^3.1.2",
+    "redux-logger": "^2.7.4",
     "sinon": "^1.17.6",
     "sinon-chai": "^2.8.0",
     "webpack": "^1.13.3",

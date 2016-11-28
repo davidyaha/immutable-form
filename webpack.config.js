@@ -8,7 +8,7 @@ module.exports = {
   output: {
     path: path.join(__dirname, '/lib'),
     filename: 'index.js',
-    library: 'another-form',
+    library: 'immutable-form',
     libraryTarget: 'umd',
   },
   modulesDirectories: [
