@@ -41,10 +41,9 @@ const createReducer = initialState =>
         }
         if (error) {
           const errorsStack = nextState.getIn([...path, 'errors']).push(error);
-          nextState = nextState.setIn([...path, 'errors'], errorsStack);
+          nextState = nextState.updateIn([...path, 'errors'], () => errorsStack);
         } else if (error === null) {
-          const errorsStack = nextState.getIn([...path, 'errors']).clear();
-          nextState = nextState.setIn([...path, 'errors'], errorsStack);
+          nextState = nextState.setIn([...path, 'errors'], Stack());
         }
         return nextState;
       }
