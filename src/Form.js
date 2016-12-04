@@ -1,4 +1,4 @@
-import { Map, Stack } from 'immutable';
+import { Map, Stack, fromJS } from 'immutable';
 import createLogger from 'redux-logger';
 import FormCollection from './FormCollection';
 import createStore from './createStore';
@@ -71,8 +71,18 @@ const createReducer = initialState =>
     return state;
   };
 
+const reviver = (key, value) => {
+  let iterable;
+  if (key === 'errors') {
+    iterable = value.toStack();
+  } else {
+    iterable = value.toMap();
+  }
+  return iterable;
+};
+
 class Form {
-  constructor(name, initialState = initialForm, options = defaultOptions) {
+  constructor(name, initialState, options = defaultOptions) {
     this.name = name;
     this.options = options;
     if (!(typeof this.name === 'string') || this.name.trim().length === 0) {
@@ -82,9 +92,12 @@ class Form {
     if (this.options.logger) {
       middleware.push(createLogger());
     }
+
+    const state = initialState ? fromJS(initialState, reviver) : initialForm;
+
     this.store = defaultOptions.store || createStore({
       reducers: {
-        form: createReducer(initialState),
+        form: createReducer(state),
       },
       middleware,
     });
@@ -148,6 +161,24 @@ class Form {
     this.store.dispatch({
       type: RESET_FORM,
     });
+  }
+  validate() {
+
+  }
+  submit() {
+    const store = this.store;
+    if (this.onValidate) {
+      this.onValidate({ store });
+    }
+    if (this.onSubmit) {
+      this.onSubmit({ store });
+    }
+    if (this.onSuccess) {
+      this.onSucces({ store });
+    }
+    if (this.onFailure) {
+      this.onSucces({ store });
+    }
   }
 }
 

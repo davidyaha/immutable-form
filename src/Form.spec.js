@@ -4,7 +4,7 @@ import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Map, Stack } from 'immutable';
-import Form from './Form';
+import { Form } from './index';
 import FormCollection from './FormCollection';
 
 chai.use(sinonChai);
@@ -32,6 +32,20 @@ describe('Form', () => {
       expect(() => new Form(' ')).to.throw(Error);
     });
     it('can use initial state', () => {
+      const form = new Form('test', {
+        fields: {
+          field1: {
+            value: 'value1',
+            errors: ['error1'],
+          },
+        },
+        errors: ['error2'],
+      });
+
+      const state = form.getState();
+      expect(state.getIn(['fields', 'field1', 'value'])).to.eql('value1');
+      expect(state.getIn(['fields', 'field1', 'errors']).first()).to.eql('error1');
+      expect(state.get('errors').first()).to.eql('error2');
     });
   });
   describe('fields', () => {
@@ -147,6 +161,12 @@ describe('Form', () => {
         fields: Map(),
         errors: Stack(),
       }));
+    });
+  });
+  describe('submit', () => {
+    it('resolves if form has no errors', () => {
+    });
+    it('rejects if form has errors', () => {
     });
   });
 });
