@@ -4,7 +4,7 @@ import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Map, Stack } from 'immutable';
-import { Form } from './index';
+import Form, { filterValidate } from './Form';
 import FormCollection from './FormCollection';
 
 chai.use(sinonChai);
@@ -167,6 +167,43 @@ describe('Form', () => {
     it('resolves if form has no errors', () => {
     });
     it('rejects if form has errors', () => {
+    });
+  });
+  describe('filterValidate', () => {
+    it('filters validate keys', () => {
+      const initialState = {
+        fields: {
+          field1: {
+            value: 'value1',
+            validate: () => 'error',
+          },
+          field2: {
+            value: 'value2',
+            validate: () => 'error',
+          },
+        },
+        errors: ['error'],
+        validate: () => 'error',
+      };
+      const { filteredState, fieldValidators, formValidators } = filterValidate(initialState);
+      expect(formValidators).to.be.array;
+      expect(fieldValidators.field1).to.be.array;
+      expect(fieldValidators.field2).to.be.array;
+      expect(filteredState).to.eql({
+        fields: {
+          field1: {
+            value: 'value1',
+          },
+          field2: {
+            value: 'value2',
+          },
+        },
+        errors: ['error'],
+      });
+    });
+  });
+  describe('validate', () => {
+    it('can validate form', () => {
     });
   });
 });

@@ -1,5 +1,6 @@
 import { Map, Stack, fromJS } from 'immutable';
 import createLogger from 'redux-logger';
+import { has, hasIn, keys } from 'lodash';
 import FormCollection from './FormCollection';
 import createStore from './createStore';
 
@@ -81,26 +82,73 @@ const reviver = (key, value) => {
   return iterable;
 };
 
+export { reviver };
+
+const filterValidate = (state) => {
+  let fields = {};
+  const form = Object.assign({}, state);
+  const fieldValidators = {};
+  let formValidators = [];
+  if (has(form, 'fields')) {
+    fields = keys(form.fields)
+        .reduce((res, key) => {
+          if (hasIn(form, ['fields', key, 'validate'])) {
+            fieldValidators[key] = Array.isArray(form.fields[key].validate)
+              ? form.fields[key].validate
+              : [form.fields[key].validate];
+            delete form.fields[key].validate;
+          }
+          return { ...res, [key]: form.fields[key] };
+        }, {});
+  }
+  if (has(form, 'validate')) {
+    formValidators = Array.isArray(form.validate) ? form.validate : [form.validate];
+    delete form.validate;
+  }
+  const filteredState = {
+    ...form,
+    fields,
+  };
+  return { filteredState, fieldValidators, formValidators };
+};
+
+export { filterValidate };
+
 class Form {
   constructor(name, initialState, options = defaultOptions) {
     this.name = name;
     this.options = options;
+    this.fieldValidators = {};
+    this.formValidators = [];
+    // Ensure the Form has a name
     if (!(typeof this.name === 'string') || this.name.trim().length === 0) {
       throw new Error('Form must have a name');
     }
+
     const middleware = [];
+    // Add logging middleware
     if (this.options.logger) {
       middleware.push(createLogger());
     }
 
-    const state = initialState ? fromJS(initialState, reviver) : initialForm;
+    let state;
+    if (initialState) {
+      const { filteredState, fieldValidators, formValidators } = filterValidate(initialState);
+      this.fieldValidators = fieldValidators;
+      this.formValidators = formValidators;
+      state = fromJS(filteredState, reviver);
+    } else {
+      state = initialForm;
+    }
 
+    // Keep track of form and field validation functions
     this.store = defaultOptions.store || createStore({
       reducers: {
         form: createReducer(state),
       },
       middleware,
     });
+
     if (options.addToFormCollection) {
       FormCollection.add(this);
     }
@@ -163,7 +211,12 @@ class Form {
     });
   }
   validate() {
+    // Run form level validations
+    const runValidators = () => {
 
+    };
+
+    runValidators(this.formValidators);
   }
   submit() {
     const store = this.store;
