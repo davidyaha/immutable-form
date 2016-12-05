@@ -204,6 +204,24 @@ describe('Form', () => {
   });
   describe('validate', () => {
     it('can validate form', () => {
+      const initialState = {
+        fields: {
+          field1: {
+            value: 'value1',
+            validate: [() => 'error1', () => 'error2'],
+          },
+          field2: {
+            value: 'value2',
+          },
+        },
+        validate: () => 'error3',
+      };
+      const form = new Form('test', initialState);
+      const isValid = form.validate();
+      expect(isValid).to.eql(false);
+      const state = form.getState();
+      expect(state.getIn(['fields', 'field1', 'errors']).size).to.eql(2);
+      expect(state.get('errors').size).to.eql(1);
     });
   });
 });

@@ -1,6 +1,6 @@
 import { Map, Stack, fromJS } from 'immutable';
 import createLogger from 'redux-logger';
-import { has, hasIn, keys } from 'lodash';
+import { has, hasIn, keys, isString } from 'lodash';
 import FormCollection from './FormCollection';
 import createStore from './createStore';
 
@@ -41,7 +41,11 @@ const createReducer = initialState =>
           nextState = nextState.setIn([...path, 'value'], value);
         }
         if (error) {
-          nextState = nextState.updateIn([...path, 'errors'], errorsStack => errorsStack.push(error));
+          if (nextState.hasIn([...path, 'errors'])) {
+            nextState = nextState.updateIn([...path, 'errors'], errorsStack => errorsStack.push(error));
+          } else {
+            nextState = nextState.setIn([...path, 'errors'], Stack().push(error));
+          }
         } else if (error === null) {
           nextState = nextState.setIn([...path, 'errors'], Stack());
         }
@@ -57,7 +61,7 @@ const createReducer = initialState =>
       }
       case ADD_ERROR: {
         const { error } = action.payload;
-        const errorsStack = state.get('errors').push(error);
+        const errorsStack = state.has('errors') ? state.get('errors').push(error) : Stack().push(error);
         return state.set('errors', errorsStack);
       }
       case CLEAR_ERRORS: {
@@ -131,6 +135,8 @@ class Form {
       middleware.push(createLogger());
     }
 
+    // If initial state is provived, need to filter and extract
+    // the validation functions.
     let state;
     if (initialState) {
       const { filteredState, fieldValidators, formValidators } = filterValidate(initialState);
@@ -202,8 +208,8 @@ class Form {
     const form = this.getState();
     // Checks all the form's fields for errors and the top level form error
     return form.get('fields').reduce((prev, curr) =>
-       prev || (prev === false && curr.get('errors').size > 0)
-    , false) || form.get('errors').size > 0;
+       prev || (prev === false && curr.has('errors') && curr.get('errors').size > 0)
+    , false) || (form.has('errors') && form.get('errors').size > 0);
   }
   resetForm() {
     this.store.dispatch({
@@ -211,12 +217,33 @@ class Form {
     });
   }
   validate() {
-    // Run form level validations
-    const runValidators = () => {
+    // Run form level validators
+    this.formValidators.forEach((validator) => {
+      const res = validator(this.getState(), {
+        store: this.store,
+      });
+      if (isString(res)) {
+        this.addError(res);
+      }
+    });
 
-    };
+    // Run field level validators
+    keys(this.fieldValidators).forEach((key) => {
+      this.fieldValidators[key].forEach((validator) => {
+        const { value } = this.getField(key);
+        const res = validator(value, {
+          key,
+          store: this.store,
+        });
+        if (isString(res)) {
+          this.setField(key, {
+            error: res,
+          });
+        }
+      });
+    });
 
-    runValidators(this.formValidators);
+    return !this.hasErrors();
   }
   submit() {
     const store = this.store;
