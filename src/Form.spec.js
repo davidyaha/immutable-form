@@ -268,4 +268,23 @@ describe('Form', () => {
       expect(state.get('errors').size).to.eql(1);
     });
   });
+  describe('fields', () => {
+    it('getFieldValues', () => {
+      const form = new Form('test', {
+        fields: {
+          field1: {
+            value: 'value1',
+          },
+          field2: {
+            value: 'value2',
+          },
+        },
+      });
+
+      expect(form.getFieldValues()).to.eql(Map({
+        field1: 'value1',
+        field2: 'value2',
+      }));
+    });
+  });
 });

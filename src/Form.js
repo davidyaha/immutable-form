@@ -216,6 +216,10 @@ class Form {
       type: RESET_FORM,
     });
   }
+  getFieldValues() {
+    const fields = this.getState().get('fields', Map()).map((value, key) => value.get('value'));
+    return fields;
+  }
   validate() {
     // Run form level validators
     this.formValidators.forEach((validator) => {
