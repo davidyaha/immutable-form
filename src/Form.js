@@ -162,7 +162,7 @@ class Form {
   getState() {
     return this.store.getState().get('form');
   }
-  setField(field, { value, error }) {
+  setField(field, value, error) {
     this.store.dispatch({
       type: SET_FIELD,
       payload: {
@@ -236,9 +236,7 @@ class Form {
           store: this.store,
         });
         if (isString(res)) {
-          this.setField(key, {
-            error: res,
-          });
+          this.setField(key, null, res);
         }
       });
     });

@@ -52,61 +52,42 @@ describe('Form', () => {
   describe('fields', () => {
     it('set field value', () => {
       const form = new Form('form');
-      form.setField('field1', {
-        value: 'value1',
-      });
+      form.setField('field1', 'value1');
       const field = form.store.getState().getIn(['form', 'fields', 'field1']);
       expect(field.get('value')).to.eql('value1');
     });
     it('sets field value, errors', () => {
       const form = new Form('form');
-      form.setField('field1', {
-        value: 'value1',
-        error: 'error1',
-      });
+      form.setField('field1', 'value1', 'error1');
       const field = form.store.getState().getIn(['form', 'fields', 'field1']);
       expect(field.get('value')).to.eql('value1');
       expect(field.get('errors').first()).to.eql('error1');
     });
     it('clears errors if passed null', () => {
       const form = new Form('form');
-      form.setField('field1', {
-        value: 'value1',
-        error: 'error1',
-      });
-      form.setField('field1', {
-        error: 'error2',
-      });
+      form.setField('field1', 'value1', 'error1');
+      form.setField('field1', null, 'error2');
       let field = form.store.getState().getIn(['form', 'fields', 'field1']);
       expect(field.get('errors').size).to.eql(2);
-      form.setField('field1', {
-        error: null,
-      });
+      form.setField('field1', null, null);
       field = form.store.getState().getIn(['form', 'fields', 'field1']);
       expect(field.get('errors').size).to.eql(0);
     });
     it('get field', () => {
       const form = new Form('form');
-      form.setField('field1', {
-        value: 'value1',
-      });
+      form.setField('field1', 'value1', 'error1');
       const field = form.getField('field1');
       expect(field.get('value')).to.eql('value1');
     });
     it('remove field', () => {
       const form = new Form('form');
-      form.setField('field1', {
-        value: 'value1',
-      });
+      form.setField('field1', 'value1');
       form.removeField('field1');
       expect(form.getField('field1')).to.eql(undefined);
     });
     it('reset field', () => {
       const form = new Form('form');
-      form.setField('field1', {
-        value: 'value1',
-        error: 'error1',
-      });
+      form.setField('field1', 'value1', 'error1');
       form.resetField('field1');
       const field = form.getField('field1');
       expect(field.get('value')).to.eql('');
@@ -132,18 +113,12 @@ describe('Form', () => {
     });
     it('has errors - field level', () => {
       const form = new Form('form');
-      form.setField('field1', {
-        value: 'value1',
-        error: 'error1',
-      });
+      form.setField('field1', 'value1', 'error1');
       expect(form.hasErrors()).to.eql(true);
     });
     it('has errors - form and filed', () => {
       const form = new Form('form');
-      form.setField('field1', {
-        value: 'value1',
-        error: 'error1',
-      });
+      form.setField('field1', 'value1', 'error1');
       const field = form.getField('field1');
       expect(field.get('errors').first()).to.eql('error1');
       expect(form.hasErrors()).to.eql(true);
@@ -152,10 +127,7 @@ describe('Form', () => {
   describe('form', () => {
     it('reset', () => {
       const form = new Form('form');
-      form.setField('field1', {
-        value: 'value1',
-        error: 'error1',
-      });
+      form.setField('field1', 'value1', 'error1');
       form.resetForm();
       const state = form.getState();
       expect(state).to.eql(Map({
