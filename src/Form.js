@@ -44,7 +44,7 @@ const createReducer = initialState =>
           if (nextState.hasIn([...path, 'errors'])) {
             nextState = nextState.updateIn([...path, 'errors'], errorsStack => errorsStack.push(error));
           } else {
-            nextState = nextState.setIn([...path, 'errors'], Stack().push(error));
+            nextState = nextState.setIn([...path, 'errors'], Stack.of(error));
           }
         } else if (error === null) {
           nextState = nextState.setIn([...path, 'errors'], Stack());
@@ -61,7 +61,7 @@ const createReducer = initialState =>
       }
       case ADD_ERROR: {
         const { error } = action.payload;
-        const errorsStack = state.has('errors') ? state.get('errors').push(error) : Stack().push(error);
+        const errorsStack = state.has('errors') ? state.get('errors').push(error) : Stack.of(error);
         return state.set('errors', errorsStack);
       }
       case CLEAR_ERRORS: {
@@ -90,7 +90,7 @@ export { reviver };
 
 const filterValidate = (state) => {
   let fields = {};
-  const form = Object.assign({}, state);
+  const form = { ...state };
   const fieldValidators = {};
   let formValidators = [];
   if (has(form, 'fields')) {
