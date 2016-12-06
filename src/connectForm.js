@@ -1,28 +1,32 @@
 import React from 'react';
-import { connect, Provider } from 'react-redux';
-import { compose, withProps, render } from 'recompose';
-import Form from './Form';
 
-const connectForm = (name, initialState, Component) => {
-  const form = new Form(name, initialState);
+const connectForm = (form, Component) => {
   class Wrapper extends React.Component {
+    constructor(props, context) {
+      super(props, context);
+      this.form = form;
+    }
     componentDidMount() {
-      this.unsubscribe = form.store.subscribe(() => {
+      this.unsubscribe = this.form.store.subscribe(() => {
         this.forceUpdate();
       });
     }
-    compontnWillUnmount() {
+    componentWillUnmount() {
       this.unsubscribe();
     }
     render() {
-      return this.props.children;
+      const fields = this.form.getFieldValues().toJS();
+      return (
+        <Component
+          {...this.props}
+          {...fields}
+          form={this.form}
+        />
+      );
     }
   }
 
-  return (
-    <Wrapper>
-      <Component />
-    </Wrapper>);
+  return Wrapper;
 };
 
 export default connectForm;
