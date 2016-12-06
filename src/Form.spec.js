@@ -2,6 +2,7 @@
 /* eslint-disable no-new */
 import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
+import sinon from 'sinon';
 import chaiAsPromised from 'chai-as-promised';
 import { Map, Stack } from 'immutable';
 import Form, { filterValidate } from './Form';
@@ -164,9 +165,81 @@ describe('Form', () => {
     });
   });
   describe('submit', () => {
-    it('resolves if form has no errors', () => {
+    it('resolves if form has no errors, calls onSuccess', (done) => {
+      const initialState = {
+        fields: {
+          field1: {
+            value: 'value1',
+          },
+          field2: {
+            value: 'value2',
+          },
+        },
+      };
+
+      const form = new Form('form', initialState);
+
+      form.onSuccess = sinon.spy();
+
+      const promise = new Promise((resolve) => {
+        resolve('good');
+      });
+
+      form.submit(promise).then((res) => {
+        expect(res).to.eql('good');
+        expect(form.onSuccess).to.have.been.called;
+        done();
+      });
     });
-    it('rejects if form has errors', () => {
+    it('rejects if form has errors', (done) => {
+      const initialState = {
+        fields: {
+          field1: {
+            value: 'value1',
+          },
+          field2: {
+            value: 'value2',
+            validate: () => 'error',
+          },
+        },
+      };
+
+      const form = new Form('form', initialState);
+
+      const promise = new Promise((resolve) => {
+        resolve('good');
+      });
+
+      form.submit(promise).catch((err) => {
+        expect(err).to.eql('Validation failed');
+        done();
+      });
+    });
+    it('rejects and calls on failure if promise fails', (done) => {
+      const initialState = {
+        fields: {
+          field1: {
+            value: 'value1',
+          },
+          field2: {
+            value: 'value2',
+          },
+        },
+      };
+
+      const form = new Form('form', initialState);
+
+      form.onFailure = sinon.spy();
+
+      const promise = new Promise((resolve, reject) => {
+        reject('bad');
+      });
+
+      form.submit(promise).catch((err) => {
+        expect(err).to.eql('bad');
+        expect(form.onFailure).to.have.been.called;
+        done();
+      });
     });
   });
   describe('filterValidate', () => {
@@ -207,7 +280,6 @@ describe('Form', () => {
       const initialState = {
         fields: {
           field1: {
-            value: 'value1',
             validate: [() => 'error1', () => 'error2'],
           },
           field2: {

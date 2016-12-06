@@ -245,20 +245,25 @@ class Form {
 
     return !this.hasErrors();
   }
-  submit() {
+  submit(promise) {
     const store = this.store;
-    if (this.onValidate) {
-      this.onValidate({ store });
-    }
-    if (this.onSubmit) {
-      this.onSubmit({ store });
-    }
-    if (this.onSuccess) {
-      this.onSucces({ store });
-    }
-    if (this.onFailure) {
-      this.onSucces({ store });
-    }
+    return new Promise((resolve, reject) => {
+      if (this.validate()) {
+        promise.then((res) => {
+          if (this.onSuccess) {
+            this.onSuccess(res, { store });
+          }
+          resolve(res);
+        }).catch((err) => {
+          if (this.onFailure) {
+            this.onFailure(err, { store });
+          }
+          reject(err);
+        });
+      } else {
+        reject('Validation failed');
+      }
+    });
   }
 }
 
