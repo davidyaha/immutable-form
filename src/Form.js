@@ -1,5 +1,6 @@
-import { Map, Stack } from 'immutable';
+import { Map, Stack, fromJS } from 'immutable';
 import createLogger from 'redux-logger';
+import { has, hasIn, keys, isString } from 'lodash';
 import FormCollection from './FormCollection';
 import createStore from './createStore';
 
@@ -40,7 +41,11 @@ const createReducer = initialState =>
           nextState = nextState.setIn([...path, 'value'], value);
         }
         if (error) {
-          nextState = nextState.updateIn([...path, 'errors'], errorsStack => errorsStack.push(error));
+          if (nextState.hasIn([...path, 'errors'])) {
+            nextState = nextState.updateIn([...path, 'errors'], errorsStack => errorsStack.push(error));
+          } else {
+            nextState = nextState.setIn([...path, 'errors'], Stack.of(error));
+          }
         } else if (error === null) {
           nextState = nextState.setIn([...path, 'errors'], Stack());
         }
@@ -56,7 +61,7 @@ const createReducer = initialState =>
       }
       case ADD_ERROR: {
         const { error } = action.payload;
-        const errorsStack = state.get('errors').push(error);
+        const errorsStack = state.has('errors') ? state.get('errors').push(error) : Stack.of(error);
         return state.set('errors', errorsStack);
       }
       case CLEAR_ERRORS: {
@@ -71,23 +76,85 @@ const createReducer = initialState =>
     return state;
   };
 
+const reviver = (key, value) => {
+  let iterable;
+  if (key === 'errors') {
+    iterable = value.toStack();
+  } else {
+    iterable = value.toMap();
+  }
+  return iterable;
+};
+
+export { reviver };
+
+const filterValidate = (state) => {
+  let fields = {};
+  const form = { ...state };
+  const fieldValidators = {};
+  let formValidators = [];
+  if (has(form, 'fields')) {
+    fields = keys(form.fields)
+        .reduce((res, key) => {
+          if (hasIn(form, ['fields', key, 'validate'])) {
+            fieldValidators[key] = Array.isArray(form.fields[key].validate)
+              ? form.fields[key].validate
+              : [form.fields[key].validate];
+            delete form.fields[key].validate;
+          }
+          return { ...res, [key]: form.fields[key] };
+        }, {});
+  }
+  if (has(form, 'validate')) {
+    formValidators = Array.isArray(form.validate) ? form.validate : [form.validate];
+    delete form.validate;
+  }
+  const filteredState = {
+    ...form,
+    fields,
+  };
+  return { filteredState, fieldValidators, formValidators };
+};
+
+export { filterValidate };
+
 class Form {
-  constructor(name, initialState = initialForm, options = defaultOptions) {
+  constructor(name, initialState, options = defaultOptions) {
     this.name = name;
     this.options = options;
+    this.fieldValidators = {};
+    this.formValidators = [];
+    // Ensure the Form has a name
     if (!(typeof this.name === 'string') || this.name.trim().length === 0) {
       throw new Error('Form must have a name');
     }
+
     const middleware = [];
+    // Add logging middleware
     if (this.options.logger) {
       middleware.push(createLogger());
     }
+
+    // If initial state is provived, need to filter and extract
+    // the validation functions.
+    let state;
+    if (initialState) {
+      const { filteredState, fieldValidators, formValidators } = filterValidate(initialState);
+      this.fieldValidators = fieldValidators;
+      this.formValidators = formValidators;
+      state = fromJS(filteredState, reviver);
+    } else {
+      state = initialForm;
+    }
+
+    // Keep track of form and field validation functions
     this.store = defaultOptions.store || createStore({
       reducers: {
-        form: createReducer(initialState),
+        form: createReducer(state),
       },
       middleware,
     });
+
     if (options.addToFormCollection) {
       FormCollection.add(this);
     }
@@ -95,7 +162,7 @@ class Form {
   getState() {
     return this.store.getState().get('form');
   }
-  setField(field, { value, error }) {
+  setField(field, value, error) {
     this.store.dispatch({
       type: SET_FIELD,
       payload: {
@@ -141,12 +208,59 @@ class Form {
     const form = this.getState();
     // Checks all the form's fields for errors and the top level form error
     return form.get('fields').reduce((prev, curr) =>
-       prev || (prev === false && curr.get('errors').size > 0)
-    , false) || form.get('errors').size > 0;
+       prev || (prev === false && curr.has('errors') && curr.get('errors').size > 0)
+    , false) || (form.has('errors') && form.get('errors').size > 0);
   }
   resetForm() {
     this.store.dispatch({
       type: RESET_FORM,
+    });
+  }
+  validate() {
+    // Run form level validators
+    this.formValidators.forEach((validator) => {
+      const res = validator(this.getState(), {
+        store: this.store,
+      });
+      if (isString(res)) {
+        this.addError(res);
+      }
+    });
+
+    // Run field level validators
+    keys(this.fieldValidators).forEach((key) => {
+      this.fieldValidators[key].forEach((validator) => {
+        const { value } = this.getField(key);
+        const res = validator(value, {
+          key,
+          store: this.store,
+        });
+        if (isString(res)) {
+          this.setField(key, null, res);
+        }
+      });
+    });
+
+    return !this.hasErrors();
+  }
+  submit(promise) {
+    const store = this.store;
+    return new Promise((resolve, reject) => {
+      if (this.validate()) {
+        promise.then((res) => {
+          if (this.onSuccess) {
+            this.onSuccess(res, { store });
+          }
+          resolve(res);
+        }).catch((err) => {
+          if (this.onFailure) {
+            this.onFailure(err, { store });
+          }
+          reject(err);
+        });
+      } else {
+        reject('Validation failed');
+      }
     });
   }
 }
