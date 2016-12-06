@@ -37,7 +37,7 @@ const createReducer = initialState =>
         const { field, value, error } = action.payload;
         const path = ['fields', field];
         let nextState = state.hasIn(path) ? state : state.setIn(path, initialField);
-        if (value) {
+        if (value || value === '') {
           nextState = nextState.setIn([...path, 'value'], value);
         }
         if (error) {
