@@ -83,7 +83,10 @@ describe('Form', () => {
       const form = new Form('form');
       form.setField('field1', 'value1');
       form.removeField('field1');
-      expect(form.getField('field1')).to.eql(undefined);
+      expect(form.getField('field1')).to.eql(Map({
+        value: '',
+        errors: Stack(),
+      }));
     });
     it('reset field', () => {
       const form = new Form('form');
@@ -92,6 +95,35 @@ describe('Form', () => {
       const field = form.getField('field1');
       expect(field.get('value')).to.eql('');
       expect(field.get('errors').size).to.eql(0);
+    });
+    it('returns empty map for field that does not exist', () => {
+      const form = new Form('form');
+      const field = form.getField('field1');
+      expect(field).to.eql(Map({
+        value: '',
+        errors: Stack(),
+      }));
+    });
+    it('getFieldValues', () => {
+      const form = new Form('test', {
+        fields: {
+          field1: {
+            value: 'value1',
+          },
+          field2: {
+            value: 'value2',
+          },
+          field3: {
+
+          },
+        },
+      });
+
+      expect(form.getFieldValues()).to.eql(Map({
+        field1: 'value1',
+        field2: 'value2',
+        field3: '',
+      }));
     });
   });
   describe('errors', () => {
@@ -102,7 +134,8 @@ describe('Form', () => {
     });
     it('clear errors', () => {
       const form = new Form('form');
-      form.addError('error1');
+      form.setField('field1', null, 'error1');
+      form.addError('error2');
       form.clearErrors();
       expect(form.getState().get('errors').size).to.eql(0);
     });
@@ -160,6 +193,31 @@ describe('Form', () => {
       form.submit(promise).then((res) => {
         expect(res).to.eql('good');
         expect(form.onSuccess).to.have.been.called;
+        done();
+      });
+    });
+    it('can use promise from handleSubmit', (done) => {
+      const initialState = {
+        fields: {
+          field1: {
+            value: 'value1',
+          },
+          field2: {
+            value: 'value2',
+          },
+        },
+      };
+
+      const form = new Form('form', initialState);
+
+      const promise = new Promise((resolve) => {
+        resolve('good');
+      });
+
+      form.handleSubmit(promise);
+
+      form.submit().then((res) => {
+        expect(res).to.eql('good');
         done();
       });
     });

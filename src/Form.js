@@ -16,7 +16,7 @@ const RESET_FIELD = `${PATH}/RESET_FIELD`;
 
 const defaultOptions = {
   addToFormCollection: true,
-  logging: true,
+  logger: false,
   store: null,
 };
 
@@ -37,7 +37,7 @@ const createReducer = initialState =>
         const { field, value, error } = action.payload;
         const path = ['fields', field];
         let nextState = state.hasIn(path) ? state : state.setIn(path, initialField);
-        if (value) {
+        if (value || value === '') {
           nextState = nextState.setIn([...path, 'value'], value);
         }
         if (error) {
@@ -173,7 +173,7 @@ class Form {
     });
   }
   getField(field) {
-    return this.store.getState().getIn(['form', 'fields', field]);
+    return this.store.getState().getIn(['form', 'fields', field], initialField);
   }
   removeField(field) {
     this.store.dispatch({
@@ -200,6 +200,7 @@ class Form {
     });
   }
   clearErrors() {
+    this.getFieldValues().forEach((value, key) => this.setField(key, null, null));
     this.store.dispatch({
       type: CLEAR_ERRORS,
     });
@@ -216,6 +217,11 @@ class Form {
       type: RESET_FORM,
     });
   }
+  getFieldValues() {
+    const fields = this.getState().get('fields', Map())
+      .map(value => (value.has('value') ? value.get('value') : ''));
+    return fields;
+  }
   validate() {
     // Run form level validators
     this.formValidators.forEach((validator) => {
@@ -230,7 +236,7 @@ class Form {
     // Run field level validators
     keys(this.fieldValidators).forEach((key) => {
       this.fieldValidators[key].forEach((validator) => {
-        const { value } = this.getField(key);
+        const value = this.getField(key).get('value', '');
         const res = validator(value, {
           key,
           store: this.store,
@@ -243,18 +249,22 @@ class Form {
 
     return !this.hasErrors();
   }
-  submit(promise) {
-    const store = this.store;
+  handleSubmit(promise) {
+    this.submitPromise = typeof promise === 'function' ? promise : () => promise;
+    return this;
+  }
+  submit(promise = this.submitPromise(this)) {
+    this.clearErrors();
     return new Promise((resolve, reject) => {
       if (this.validate()) {
         promise.then((res) => {
           if (this.onSuccess) {
-            this.onSuccess(res, { store });
+            this.onSuccess(res, this);
           }
           resolve(res);
         }).catch((err) => {
           if (this.onFailure) {
-            this.onFailure(err, { store });
+            this.onFailure(err, this);
           }
           reject(err);
         });

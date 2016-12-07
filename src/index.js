@@ -1,7 +1,7 @@
 import Form from './Form';
 import FormCollection from './FormCollection';
-import ReactForm from './ReactForm';
+import connectForm from './connectForm';
 
 export { Form };
 export { FormCollection };
-export { ReactForm };
+export { connectForm };
