@@ -173,7 +173,7 @@ class Form {
     });
   }
   getField(field) {
-    return this.store.getState().getIn(['form', 'fields', field]);
+    return this.store.getState().getIn(['form', 'fields', field], initialField);
   }
   removeField(field) {
     this.store.dispatch({

@@ -83,7 +83,10 @@ describe('Form', () => {
       const form = new Form('form');
       form.setField('field1', 'value1');
       form.removeField('field1');
-      expect(form.getField('field1')).to.eql(undefined);
+      expect(form.getField('field1')).to.eql(Map({
+        value: '',
+        errors: Stack(),
+      }));
     });
     it('reset field', () => {
       const form = new Form('form');
@@ -92,6 +95,31 @@ describe('Form', () => {
       const field = form.getField('field1');
       expect(field.get('value')).to.eql('');
       expect(field.get('errors').size).to.eql(0);
+    });
+    it('returns empty map for field that does not exist', () => {
+      const form = new Form('form');
+      const field = form.getField('field1');
+      expect(field).to.eql(Map({
+        value: '',
+        errors: Stack(),
+      }));
+    });
+    it('getFieldValues', () => {
+      const form = new Form('test', {
+        fields: {
+          field1: {
+            value: 'value1',
+          },
+          field2: {
+            value: 'value2',
+          },
+        },
+      });
+
+      expect(form.getFieldValues()).to.eql(Map({
+        field1: 'value1',
+        field2: 'value2',
+      }));
     });
   });
   describe('errors', () => {
@@ -292,25 +320,6 @@ describe('Form', () => {
       const state = form.getState();
       expect(state.getIn(['fields', 'field1', 'errors']).size).to.eql(2);
       expect(state.get('errors').size).to.eql(1);
-    });
-  });
-  describe('fields', () => {
-    it('getFieldValues', () => {
-      const form = new Form('test', {
-        fields: {
-          field1: {
-            value: 'value1',
-          },
-          field2: {
-            value: 'value2',
-          },
-        },
-      });
-
-      expect(form.getFieldValues()).to.eql(Map({
-        field1: 'value1',
-        field2: 'value2',
-      }));
     });
   });
 });
