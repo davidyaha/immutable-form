@@ -102,7 +102,8 @@ describe('Form', () => {
     });
     it('clear errors', () => {
       const form = new Form('form');
-      form.addError('error1');
+      form.setField('field1', null, 'error1');
+      form.addError('error2');
       form.clearErrors();
       expect(form.getState().get('errors').size).to.eql(0);
     });

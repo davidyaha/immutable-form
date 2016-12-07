@@ -16,7 +16,7 @@ const RESET_FIELD = `${PATH}/RESET_FIELD`;
 
 const defaultOptions = {
   addToFormCollection: true,
-  logging: false,
+  logger: false,
   store: null,
 };
 
@@ -200,6 +200,7 @@ class Form {
     });
   }
   clearErrors() {
+    this.getFieldValues().forEach((value, key) => this.setField(key, null, null));
     this.store.dispatch({
       type: CLEAR_ERRORS,
     });
@@ -234,7 +235,7 @@ class Form {
     // Run field level validators
     keys(this.fieldValidators).forEach((key) => {
       this.fieldValidators[key].forEach((validator) => {
-        const { value } = this.getField(key);
+        const value = this.getField(key).get('value', '');
         const res = validator(value, {
           key,
           store: this.store,
@@ -252,17 +253,17 @@ class Form {
     return this;
   }
   submit(promise = this.submitPromise(this)) {
-    const store = this.store;
+    this.clearErrors();
     return new Promise((resolve, reject) => {
       if (this.validate()) {
         promise.then((res) => {
           if (this.onSuccess) {
-            this.onSuccess(res, { store });
+            this.onSuccess(res, this);
           }
           resolve(res);
         }).catch((err) => {
           if (this.onFailure) {
-            this.onFailure(err, { store });
+            this.onFailure(err, this);
           }
           reject(err);
         });
