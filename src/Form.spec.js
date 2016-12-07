@@ -113,12 +113,16 @@ describe('Form', () => {
           field2: {
             value: 'value2',
           },
+          field3: {
+
+          },
         },
       });
 
       expect(form.getFieldValues()).to.eql(Map({
         field1: 'value1',
         field2: 'value2',
+        field3: '',
       }));
     });
   });

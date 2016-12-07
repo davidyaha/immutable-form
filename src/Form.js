@@ -218,7 +218,8 @@ class Form {
     });
   }
   getFieldValues() {
-    const fields = this.getState().get('fields', Map()).map(value => value.get('value'));
+    const fields = this.getState().get('fields', Map())
+      .map(value => (value.has('value') ? value.get('value') : ''));
     return fields;
   }
   validate() {
