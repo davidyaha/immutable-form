@@ -16,7 +16,7 @@ const RESET_FIELD = `${PATH}/RESET_FIELD`;
 
 const defaultOptions = {
   addToFormCollection: true,
-  logging: true,
+  logging: false,
   store: null,
 };
 
@@ -217,7 +217,7 @@ class Form {
     });
   }
   getFieldValues() {
-    const fields = this.getState().get('fields', Map()).map((value, key) => value.get('value'));
+    const fields = this.getState().get('fields', Map()).map(value => value.get('value'));
     return fields;
   }
   validate() {
@@ -247,7 +247,11 @@ class Form {
 
     return !this.hasErrors();
   }
-  submit(promise) {
+  handleSubmit(promise) {
+    this.submitPromise = typeof promise === 'function' ? promise : () => promise;
+    return this;
+  }
+  submit(promise = this.submitPromise(this)) {
     const store = this.store;
     return new Promise((resolve, reject) => {
       if (this.validate()) {

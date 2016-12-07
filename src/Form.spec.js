@@ -163,6 +163,31 @@ describe('Form', () => {
         done();
       });
     });
+    it('can use promise from handleSubmit', (done) => {
+      const initialState = {
+        fields: {
+          field1: {
+            value: 'value1',
+          },
+          field2: {
+            value: 'value2',
+          },
+        },
+      };
+
+      const form = new Form('form', initialState);
+
+      const promise = new Promise((resolve) => {
+        resolve('good');
+      });
+
+      form.handleSubmit(promise);
+
+      form.submit().then((res) => {
+        expect(res).to.eql('good');
+        done();
+      });
+    });
     it('rejects if form has errors', (done) => {
       const initialState = {
         fields: {
