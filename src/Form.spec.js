@@ -208,7 +208,7 @@ describe('Form', () => {
         done();
       });
     });
-    it('can use promise from handleSubmit', (done) => {
+    it('can use promise from setSubmit', (done) => {
       const initialState = {
         fields: {
           field1: {
@@ -226,7 +226,7 @@ describe('Form', () => {
         resolve('good');
       });
 
-      form.handleSubmit(promise);
+      form.setSubmit(promise);
 
       form.submit().then((res) => {
         expect(res).to.eql('good');
@@ -252,7 +252,7 @@ describe('Form', () => {
         resolve('good');
       });
 
-      form.handleSubmit(() => promise);
+      form.setSubmit(() => promise);
 
       form.submit().catch((err) => {
         expect(err).to.eql('Validation failed');
@@ -349,6 +349,20 @@ describe('Form', () => {
       }).then(() => {
         done();
       }));
+    });
+  });
+  describe('setOnSuccess', () => {
+    it('can provide onSuccess callback', () => {
+      const onSuccess = () => null;
+      const form = new Form('test').setOnSuccess(onSuccess);
+      expect(form.onSuccess).to.eql(onSuccess);
+    });
+  });
+  describe('setOnFailure', () => {
+    it('can provide onFailure callback', () => {
+      const onFailure = () => null;
+      const form = new Form('test').setOnFailure(onFailure);
+      expect(form.onFailure).to.eql(onFailure);
     });
   });
 });

@@ -254,8 +254,16 @@ class Form {
     func(this);
     return this;
   }
-  handleSubmit(promise) {
+  setSubmit(promise) {
     this.submitPromise = typeof promise === 'function' ? promise : () => promise;
+    return this;
+  }
+  setOnSuccess(func) {
+    this.onSuccess = func;
+    return this;
+  }
+  setOnFailure(func) {
+    this.onFailure = func;
     return this;
   }
   submit(promise = this.submitPromise(this)) {
