@@ -1,6 +1,6 @@
 import { Map, Stack, fromJS } from 'immutable';
 import createLogger from 'redux-logger';
-import { has, hasIn, keys, isString } from 'lodash';
+import { has, hasIn, keys, isString, isEmpty, cloneDeep } from 'lodash';
 import FormCollection from './FormCollection';
 import createStore from './createStore';
 
@@ -138,8 +138,9 @@ class Form {
     // If initial state is provived, need to filter and extract
     // the validation functions.
     let state;
-    if (initialState) {
-      const { filteredState, fieldValidators, formValidators } = filterValidate(initialState);
+    const tempState = cloneDeep(initialState);
+    if (!isEmpty(tempState)) {
+      const { filteredState, fieldValidators, formValidators } = filterValidate(tempState);
       this.fieldValidators = fieldValidators;
       this.formValidators = formValidators;
       state = fromJS(filteredState, reviver);

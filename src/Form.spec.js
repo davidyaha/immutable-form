@@ -33,7 +33,24 @@ describe('Form', () => {
       expect(() => new Form(' ')).to.throw(Error);
     });
     it('can use initial state', () => {
-      const form = new Form('test', {
+      const initialState = {
+        fields: {
+          field1: {
+            value: 'value1',
+            errors: ['error1'],
+          },
+        },
+        errors: ['error2'],
+      };
+
+      const form = new Form('test', initialState);
+
+      const state = form.getState();
+      expect(state.getIn(['fields', 'field1', 'value'])).to.eql('value1');
+      expect(state.getIn(['fields', 'field1', 'errors']).first()).to.eql('error1');
+      expect(state.get('errors').first()).to.eql('error2');
+      // Make sure initialState isn't mutated by Form
+      expect(initialState).to.eql({
         fields: {
           field1: {
             value: 'value1',
@@ -42,11 +59,6 @@ describe('Form', () => {
         },
         errors: ['error2'],
       });
-
-      const state = form.getState();
-      expect(state.getIn(['fields', 'field1', 'value'])).to.eql('value1');
-      expect(state.getIn(['fields', 'field1', 'errors']).first()).to.eql('error1');
-      expect(state.get('errors').first()).to.eql('error2');
     });
   });
   describe('fields', () => {
@@ -229,7 +241,7 @@ describe('Form', () => {
           },
           field2: {
             value: 'value2',
-            validate: () => 'error',
+            validate: [() => 'error'],
           },
         },
       };
@@ -240,8 +252,11 @@ describe('Form', () => {
         resolve('good');
       });
 
-      form.submit(promise).catch((err) => {
+      form.handleSubmit(() => promise);
+
+      form.submit().catch((err) => {
         expect(err).to.eql('Validation failed');
+        expect(form.getField('field2').get('errors').first()).to.eql('error');
         done();
       });
     });
