@@ -76,18 +76,6 @@ const createReducer = initialState =>
     return state;
   };
 
-const reviver = (key, value) => {
-  let iterable;
-  if (key === 'errors') {
-    iterable = value.toStack();
-  } else {
-    iterable = value.toMap();
-  }
-  return iterable;
-};
-
-export { reviver };
-
 const filterValidate = (state) => {
   let fields = {};
   const form = Object.assign({}, state);
@@ -143,7 +131,15 @@ class Form {
       const { filteredState, fieldValidators, formValidators } = filterValidate(tempState);
       this.fieldValidators = fieldValidators;
       this.formValidators = formValidators;
-      state = fromJS(filteredState, reviver);
+      // Create the Immutable object from initial state
+      const fields = !has(filteredState, 'fields') ? Map() : keys(filteredState.fields).reduce((res, key) => res.set(key, Map({
+        value: has(filteredState.fields[key], 'value') ? filteredState.fields[key].value : '',
+        errors: has(filteredState.fields[key], 'errors') ? Stack(filteredState.fields[key].errors) : Stack(),
+      })), Map());
+      state = Map({
+        fields,
+        errors: has(filteredState, 'errors') ? Stack(filteredState.errors) : Stack(),
+      });
     } else {
       state = initialForm;
     }
@@ -217,6 +213,9 @@ class Form {
     this.store.dispatch({
       type: RESET_FORM,
     });
+  }
+  getFields() {
+    return this.getState().get('fields', Map());
   }
   getFieldValues() {
     const fields = this.getState().get('fields', Map())

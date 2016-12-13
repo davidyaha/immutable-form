@@ -130,7 +130,6 @@ describe('Form', () => {
           },
         },
       });
-
       expect(form.getFieldValues()).to.eql(Map({
         field1: 'value1',
         field2: 'value2',
@@ -386,6 +385,24 @@ describe('Form', () => {
         field2: Stack(['error2']),
         field3: Stack(),
       }));
+    });
+  });
+  describe('getFields', () => {
+    it('can get a map of fields', () => {
+      const form = new Form('test', {
+        fields: {
+          field1: {
+            value: 'value1',
+            errors: ['error1'],
+          },
+        },
+      });
+      expect(form.getFields().toJS()).to.eql({
+        field1: {
+          value: 'value1',
+          errors: ['error1'],
+        },
+      });
     });
   });
 });

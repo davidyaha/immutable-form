@@ -15,13 +15,10 @@ const connectForm = form => (Component) => {
       this.unsubscribe();
     }
     render() {
-      const fields = this.form.getFieldValues().toJS();
-      const fieldErrors = this.form.getFieldErrors();
-
+      const fields = this.form.getFields();
       return React.cloneElement(Component, {
         ...this.props,
         fields,
-        fieldErrors,
         form: this.form,
       });
     }
