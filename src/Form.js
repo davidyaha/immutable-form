@@ -1,6 +1,6 @@
-import { Map, Stack, fromJS } from 'immutable';
+import { Map, Stack } from 'immutable';
 import createLogger from 'redux-logger';
-import { has, hasIn, keys, isString } from 'lodash';
+import { has, hasIn, keys, isString, isEmpty, cloneDeep } from 'lodash';
 import FormCollection from './FormCollection';
 import createStore from './createStore';
 
@@ -76,18 +76,6 @@ const createReducer = initialState =>
     return state;
   };
 
-const reviver = (key, value) => {
-  let iterable;
-  if (key === 'errors') {
-    iterable = value.toStack();
-  } else {
-    iterable = value.toMap();
-  }
-  return iterable;
-};
-
-export { reviver };
-
 const filterValidate = (state) => {
   let fields = {};
   const form = { ...state };
@@ -138,11 +126,20 @@ class Form {
     // If initial state is provived, need to filter and extract
     // the validation functions.
     let state;
-    if (initialState) {
-      const { filteredState, fieldValidators, formValidators } = filterValidate(initialState);
+    const tempState = cloneDeep(initialState);
+    if (!isEmpty(tempState)) {
+      const { filteredState, fieldValidators, formValidators } = filterValidate(tempState);
       this.fieldValidators = fieldValidators;
       this.formValidators = formValidators;
-      state = fromJS(filteredState, reviver);
+      // Create the Immutable object from initial state
+      const fields = !has(filteredState, 'fields') ? Map() : keys(filteredState.fields).reduce((res, key) => res.set(key, Map({
+        value: has(filteredState.fields[key], 'value') ? filteredState.fields[key].value : '',
+        errors: has(filteredState.fields[key], 'errors') ? Stack(filteredState.fields[key].errors) : Stack(),
+      })), Map());
+      state = Map({
+        fields,
+        errors: has(filteredState, 'errors') ? Stack(filteredState.errors) : Stack(),
+      });
     } else {
       state = initialForm;
     }
@@ -217,16 +214,24 @@ class Form {
       type: RESET_FORM,
     });
   }
+  getFields() {
+    return this.getState().get('fields', Map());
+  }
   getFieldValues() {
     const fields = this.getState().get('fields', Map())
       .map(value => (value.has('value') ? value.get('value') : ''));
     return fields;
   }
+  getFieldErrors() {
+    const errors = this.getState().get('fields', Map())
+      .map(value => (value.has('errors') ? value.get('errors') : Stack()));
+    return errors;
+  }
   validate() {
     // Run form level validators
     this.formValidators.forEach((validator) => {
       const res = validator(this.getState(), {
-        store: this.store,
+        form: this,
       });
       if (isString(res)) {
         this.addError(res);
@@ -239,7 +244,7 @@ class Form {
         const value = this.getField(key).get('value', '');
         const res = validator(value, {
           key,
-          store: this.store,
+          form: this,
         });
         if (isString(res)) {
           this.setField(key, null, res);
@@ -249,8 +254,20 @@ class Form {
 
     return !this.hasErrors();
   }
-  handleSubmit(promise) {
+  load(func) {
+    func(this);
+    return this;
+  }
+  setSubmit(promise) {
     this.submitPromise = typeof promise === 'function' ? promise : () => promise;
+    return this;
+  }
+  setOnSuccess(func) {
+    this.onSuccess = func;
+    return this;
+  }
+  setOnFailure(func) {
+    this.onFailure = func;
     return this;
   }
   submit(promise = this.submitPromise(this)) {

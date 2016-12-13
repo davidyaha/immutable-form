@@ -33,7 +33,24 @@ describe('Form', () => {
       expect(() => new Form(' ')).to.throw(Error);
     });
     it('can use initial state', () => {
-      const form = new Form('test', {
+      const initialState = {
+        fields: {
+          field1: {
+            value: 'value1',
+            errors: ['error1'],
+          },
+        },
+        errors: ['error2'],
+      };
+
+      const form = new Form('test', initialState);
+
+      const state = form.getState();
+      expect(state.getIn(['fields', 'field1', 'value'])).to.eql('value1');
+      expect(state.getIn(['fields', 'field1', 'errors']).first()).to.eql('error1');
+      expect(state.get('errors').first()).to.eql('error2');
+      // Make sure initialState isn't mutated by Form
+      expect(initialState).to.eql({
         fields: {
           field1: {
             value: 'value1',
@@ -42,11 +59,6 @@ describe('Form', () => {
         },
         errors: ['error2'],
       });
-
-      const state = form.getState();
-      expect(state.getIn(['fields', 'field1', 'value'])).to.eql('value1');
-      expect(state.getIn(['fields', 'field1', 'errors']).first()).to.eql('error1');
-      expect(state.get('errors').first()).to.eql('error2');
     });
   });
   describe('fields', () => {
@@ -118,7 +130,6 @@ describe('Form', () => {
           },
         },
       });
-
       expect(form.getFieldValues()).to.eql(Map({
         field1: 'value1',
         field2: 'value2',
@@ -196,7 +207,7 @@ describe('Form', () => {
         done();
       });
     });
-    it('can use promise from handleSubmit', (done) => {
+    it('can use promise from setSubmit', (done) => {
       const initialState = {
         fields: {
           field1: {
@@ -214,7 +225,7 @@ describe('Form', () => {
         resolve('good');
       });
 
-      form.handleSubmit(promise);
+      form.setSubmit(promise);
 
       form.submit().then((res) => {
         expect(res).to.eql('good');
@@ -229,7 +240,7 @@ describe('Form', () => {
           },
           field2: {
             value: 'value2',
-            validate: () => 'error',
+            validate: [() => 'error'],
           },
         },
       };
@@ -240,8 +251,11 @@ describe('Form', () => {
         resolve('good');
       });
 
-      form.submit(promise).catch((err) => {
+      form.setSubmit(() => promise);
+
+      form.submit().catch((err) => {
         expect(err).to.eql('Validation failed');
+        expect(form.getField('field2').get('errors').first()).to.eql('error');
         done();
       });
     });
@@ -324,6 +338,71 @@ describe('Form', () => {
       const state = form.getState();
       expect(state.getIn(['fields', 'field1', 'errors']).size).to.eql(2);
       expect(state.get('errors').size).to.eql(1);
+    });
+  });
+  describe('load', () => {
+    it('can load state from a promise', (done) => {
+      new Form('test').load(() => Promise.resolve({
+        field1: 'field1',
+        field2: 'filed2',
+      }).then(() => {
+        done();
+      }));
+    });
+  });
+  describe('setOnSuccess', () => {
+    it('can provide onSuccess callback', () => {
+      const onSuccess = () => null;
+      const form = new Form('test').setOnSuccess(onSuccess);
+      expect(form.onSuccess).to.eql(onSuccess);
+    });
+  });
+  describe('setOnFailure', () => {
+    it('can provide onFailure callback', () => {
+      const onFailure = () => null;
+      const form = new Form('test').setOnFailure(onFailure);
+      expect(form.onFailure).to.eql(onFailure);
+    });
+  });
+  describe('getFieldErrors', () => {
+    it('can get a map of fields and errors', () => {
+      const form = new Form('test', {
+        fields: {
+          field1: {
+            errors: ['error1'],
+          },
+          field2: {
+            errors: ['error2'],
+          },
+          field3: {
+
+          },
+        },
+      });
+
+      expect(form.getFieldErrors()).to.eql(Map({
+        field1: Stack(['error1']),
+        field2: Stack(['error2']),
+        field3: Stack(),
+      }));
+    });
+  });
+  describe('getFields', () => {
+    it('can get a map of fields', () => {
+      const form = new Form('test', {
+        fields: {
+          field1: {
+            value: 'value1',
+            errors: ['error1'],
+          },
+        },
+      });
+      expect(form.getFields().toJS()).to.eql({
+        field1: {
+          value: 'value1',
+          errors: ['error1'],
+        },
+      });
     });
   });
 });
