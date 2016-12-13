@@ -326,4 +326,14 @@ describe('Form', () => {
       expect(state.get('errors').size).to.eql(1);
     });
   });
+  describe('load', () => {
+    it('can load state from a promise', (done) => {
+      new Form('test').load(() => Promise.resolve({
+        field1: 'field1',
+        field2: 'filed2',
+      }).then(() => {
+        done();
+      }));
+    });
+  });
 });

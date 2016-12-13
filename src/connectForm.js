@@ -1,6 +1,6 @@
 import React from 'react';
 
-const connectForm = (form, Component) => {
+const connectForm = form => (Component) => {
   class Wrapper extends React.Component {
     constructor(props, context) {
       super(props, context);
@@ -16,13 +16,11 @@ const connectForm = (form, Component) => {
     }
     render() {
       const fields = this.form.getFieldValues().toJS();
-      return (
-        <Component
-          {...this.props}
-          {...fields}
-          form={this.form}
-        />
-      );
+      return React.cloneElement(Component, {
+        ...this.props,
+        ...fields,
+        form: this.form,
+      });
     }
   }
 
