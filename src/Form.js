@@ -1,4 +1,4 @@
-import { Map, Stack, fromJS } from 'immutable';
+import { Map, Stack } from 'immutable';
 import createLogger from 'redux-logger';
 import { has, hasIn, keys, isString, isEmpty, cloneDeep } from 'lodash';
 import FormCollection from './FormCollection';
