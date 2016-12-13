@@ -365,4 +365,27 @@ describe('Form', () => {
       expect(form.onFailure).to.eql(onFailure);
     });
   });
+  describe('getFieldErrors', () => {
+    it('can get a map of fields and errors', () => {
+      const form = new Form('test', {
+        fields: {
+          field1: {
+            errors: ['error1'],
+          },
+          field2: {
+            errors: ['error2'],
+          },
+          field3: {
+
+          },
+        },
+      });
+
+      expect(form.getFieldErrors()).to.eql(Map({
+        field1: Stack(['error1']),
+        field2: Stack(['error2']),
+        field3: Stack(),
+      }));
+    });
+  });
 });

@@ -16,9 +16,12 @@ const connectForm = form => (Component) => {
     }
     render() {
       const fields = this.form.getFieldValues().toJS();
+      const fieldErrors = this.form.getFieldErrors();
+
       return React.cloneElement(Component, {
         ...this.props,
-        ...fields,
+        fields,
+        fieldErrors,
         form: this.form,
       });
     }

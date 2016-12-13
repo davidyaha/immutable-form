@@ -223,6 +223,11 @@ class Form {
       .map(value => (value.has('value') ? value.get('value') : ''));
     return fields;
   }
+  getFieldErrors() {
+    const errors = this.getState().get('fields', Map())
+      .map(value => (value.has('errors') ? value.get('errors') : Stack()));
+    return errors;
+  }
   validate() {
     // Run form level validators
     this.formValidators.forEach((validator) => {
