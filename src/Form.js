@@ -226,7 +226,7 @@ class Form {
     // Run form level validators
     this.formValidators.forEach((validator) => {
       const res = validator(this.getState(), {
-        store: this.store,
+        form: this,
       });
       if (isString(res)) {
         this.addError(res);
@@ -239,7 +239,7 @@ class Form {
         const value = this.getField(key).get('value', '');
         const res = validator(value, {
           key,
-          store: this.store,
+          form: this,
         });
         if (isString(res)) {
           this.setField(key, null, res);
