@@ -36,15 +36,15 @@ const connectForm = form => (Component) => {
       });
     }
     render() {
-      if (this.state.loaded) {
-        const fields = this.form.getFields();
-        return React.cloneElement(Component, {
-          ...this.props,
-          fields,
-          form: this.form,
-        });
+      if (!this.state.loaded) {
+        return null;
       }
-      return null;
+      const fields = this.form.getFields();
+      return React.cloneElement(Component, {
+        ...this.props,
+        fields,
+        form: this.form,
+      });
     }
   }
 
