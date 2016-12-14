@@ -35,7 +35,12 @@ This package consists of three modules, `Form`, `FormCollection`, and `connectFo
 ```javascript
 import { Form, connectForm } from 'immutable-form';
 
-const form = new Form('userForm', {
+// This is just a mock promise for the sake of this code example, in reality this promise should originate from performing an async call to some api.
+const createUserPromise = Promise.resolve({
+  userId: '123'
+})
+
+const userForm = new Form('userForm', {
   fields: {
     username: {
       // All these fields are optional,
@@ -52,6 +57,13 @@ const form = new Form('userForm', {
     }
   }
 })
+// Send a request to the server
+.setSubmit((form) => createUserPromise)
+// If the promise resolves, do something with the results
+.setOnSuccess(({userId}, form) => userId)
+// If the promise is rejected, do something.
+.setOnFailure((err, form) => err)
+
 
 const UserForm = ({
   // fields is a an Immutable Map
@@ -75,7 +87,7 @@ const UserForm = ({
     <button onClick={() => form.submit()} />
   </div>
 
-export default connectForm(form)(UserForm);
+export default connectForm(userForm)(UserForm);
 
 ```
 
@@ -84,7 +96,7 @@ export default connectForm(form)(UserForm);
 ```javascript
 import { Form, connectForm } from 'immutable-form';
 
-// This is just a mock promise, in reality this promise should originate from performing an async call to some api.
+// This is just a mock promise for the sake of this code example, in reality this promise should originate from performing an async call to some api.
 const loadFormPromise = Promise.resolve({
   username: 'someusername',
   password: 'somepassword'
