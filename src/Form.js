@@ -254,13 +254,12 @@ class Form {
 
     return !this.hasErrors();
   }
-  load(func) {
-    func(this);
+  setLoad(promise) {
+    this.loadPromise = typeof promise === 'function' ? promise : () => promise;
     return this;
   }
-  setSubmit(promise) {
-    this.submitPromise = typeof promise === 'function' ? promise : () => promise;
-    return this;
+  load(promise = this.loadPromise(this)) {
+    return promise;
   }
   setOnSuccess(func) {
     this.onSuccess = func;
@@ -268,6 +267,10 @@ class Form {
   }
   setOnFailure(func) {
     this.onFailure = func;
+    return this;
+  }
+  setSubmit(promise) {
+    this.submitPromise = typeof promise === 'function' ? promise : () => promise;
     return this;
   }
   submit(promise = this.submitPromise(this)) {
