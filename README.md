@@ -74,13 +74,13 @@ const UserForm = ({
   <div>
     <input
       type="text"
-      onChange={() => form.setField('username')}
+      onChange={(e) => form.setField('username', e.target.value)}
       value={fields.getIn(['username', 'value'])}
     />
     {fields.getIn(['username', 'errors'].first())}
     <input
       type="text"
-      onChange={() => form.setField('password')}
+      onChange={(e) => form.setField('password', e.target.value)}
       value={fields.getIn(['password', 'value'])}
     />
     {fields.getIn(['password', 'errors'].first())}
@@ -134,6 +134,6 @@ import { Form, connectForm } from 'immutable-form';
 
 const Form = new Form('form', {}, {
     logger: true, // Will enable redux-logger (false by default)
-    addToFormCollection: true, // Refrain from adding a reference to FormCollection, (true by default)
+    addToFormCollection: true, // Refrains from adding a reference to FormCollection, (true by default)
 })
 ```
