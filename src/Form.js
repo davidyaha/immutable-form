@@ -254,9 +254,12 @@ class Form {
 
     return !this.hasErrors();
   }
-  load(func) {
-    func(this);
+  setLoad(promise) {
+    this.loadPromise = typeof promise === 'function' ? promise : () => promise;
     return this;
+  }
+  load(promise = this.loadPromise(this)) {
+    return promise;
   }
   setSubmit(promise) {
     this.submitPromise = typeof promise === 'function' ? promise : () => promise;

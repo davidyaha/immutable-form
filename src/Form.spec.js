@@ -340,14 +340,15 @@ describe('Form', () => {
       expect(state.get('errors').size).to.eql(1);
     });
   });
-  describe('load', () => {
+  describe('setLoad', () => {
     it('can load state from a promise', (done) => {
-      new Form('test').load(() => Promise.resolve({
+      const form = new Form('test').setLoad(() => Promise.resolve({
         field1: 'field1',
         field2: 'filed2',
-      }).then(() => {
-        done();
       }));
+      form.load().then(() => {
+        done();
+      });
     });
   });
   describe('setOnSuccess', () => {
