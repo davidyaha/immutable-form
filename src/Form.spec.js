@@ -168,18 +168,6 @@ describe('Form', () => {
       expect(form.hasErrors()).to.eql(true);
     });
   });
-  describe('form', () => {
-    it('reset', () => {
-      const form = new Form('form');
-      form.setField('field1', 'value1', 'error1');
-      form.resetForm();
-      const state = form.getState();
-      expect(state).to.eql(Map({
-        fields: Map(),
-        errors: Stack(),
-      }));
-    });
-  });
   describe('submit', () => {
     it('resolves if form has no errors, calls onSuccess', (done) => {
       const initialState = {
@@ -403,6 +391,53 @@ describe('Form', () => {
           value: 'value1',
           errors: ['error1'],
         },
+      });
+    });
+  });
+  describe('reset', () => {
+    it('can reset to the initial state', () => {
+      const form = new Form('test', {
+        fields: {
+          field1: {
+            value: '',
+          },
+        },
+      });
+      form.setField('field1', 'value1');
+      form.setField('field2', 'value2');
+      form.reset();
+      expect(form.getState().toJS()).to.eql({
+        fields: {
+          field1: {
+            value: '',
+            errors: [],
+          },
+        },
+        errors: [],
+      });
+    });
+  });
+  describe('saveInitialState', () => {
+    it('can save a new initial state', () => {
+      const form = new Form('test', {
+        fields: {
+          field1: {
+            value: '',
+          },
+        },
+      });
+      form.setField('field1', 'value1');
+      form.saveInitialState();
+      form.setField('field2', 'value2');
+      form.reset();
+      expect(form.getState().toJS()).to.eql({
+        fields: {
+          field1: {
+            value: 'value1',
+            errors: [],
+          },
+        },
+        errors: [],
       });
     });
   });
