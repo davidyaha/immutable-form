@@ -68,7 +68,7 @@ const createReducer = initialState =>
         return state.set('errors', Stack());
       }
       case RESET_FORM: {
-        return initialForm;
+        return state.update(() => action.payload.initialState);
       }
       default:
         break;
@@ -144,6 +144,8 @@ class Form {
       state = initialForm;
     }
 
+    this.initialState = cloneDeep(state);
+
     // Keep track of form and field validation functions
     this.store = defaultOptions.store || createStore({
       reducers: {
@@ -209,10 +211,16 @@ class Form {
        prev || (prev === false && curr.has('errors') && curr.get('errors').size > 0)
     , false) || (form.has('errors') && form.get('errors').size > 0);
   }
-  resetForm() {
+  reset() {
     this.store.dispatch({
       type: RESET_FORM,
+      payload: {
+        initialState: this.initialState,
+      },
     });
+  }
+  saveInitialState() {
+    this.initialState = this.getState();
   }
   getFields() {
     return this.getState().get('fields', Map());

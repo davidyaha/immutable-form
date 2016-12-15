@@ -121,6 +121,9 @@ const userForm = new Form('userForm', {
   // you need to manually wire it into the form.
   form.setField('username', username);
   form.setField('email', email);
+  // To set the loaded data as the form's initial state
+  form.saveInitialState();
+  // This allows you call form.reset() and reset to the loaded values instead of an empty form.
 }));
 
 ```
