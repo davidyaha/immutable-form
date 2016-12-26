@@ -1,5 +1,4 @@
 import { Map, Stack } from 'immutable';
-import createLogger from 'redux-logger';
 import { has, hasIn, keys, isString, isEmpty, cloneDeep } from 'lodash';
 import FormCollection from './FormCollection';
 import createStore from './createStore';
@@ -120,7 +119,11 @@ class Form {
     const middleware = [];
     // Add logging middleware
     if (this.options.logger) {
-      middleware.push(createLogger());
+      if (require.resolve('redux-logger')) {
+        // eslint-disable-next-line global-require
+        const createLogger = require('redux-logger');
+        middleware.push(createLogger());
+      }
     }
 
     // If initial state is provived, need to filter and extract
