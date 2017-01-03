@@ -328,6 +328,23 @@ describe('Form', () => {
       expect(state.get('errors').size).to.eql(1);
     });
   });
+  describe('addFieldValidator, removeFieldValidator', () => {
+    it('can add and remove a form field validator', () => {
+      const initialState = {
+        fields: {
+          field1: {},
+        },
+      };
+      const form = new Form('test', initialState);
+      expect(form.validate()).to.eql(true);
+      const validator = () => 'error';
+      form.addFieldValidator('field1', validator);
+      expect(form.validate()).to.eql(false);
+      form.removeFieldValidator('field1', validator);
+      form.clearErrors();
+      expect(form.validate()).to.eql(true);
+    });
+  });
   describe('setLoad', () => {
     it('can load state from a promise', (done) => {
       const form = new Form('test').setLoad(() => Promise.resolve({
