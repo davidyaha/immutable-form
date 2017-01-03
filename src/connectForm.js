@@ -11,21 +11,14 @@ const connectForm = form => (Component) => {
       };
     }
     async componentDidMount() {
-      this.form = (isFunction(form) ? form : () => form)();
-      this.unsubscribe = this.form.store.subscribe(() => {
-        this.forceUpdate();
-      });
-      if (isFunction(this.form.loadPromise)) {
-        await this.form.load();
-        // eslint-disable-next-line react/no-did-mount-set-state
+      await this.reloadForm(this.props);
+    }
+    async componentWillReceiveProps(nextProps) {
+      if (isFunction(form)) {
         this.setState({
-          loaded: true,
+          loaded: false,
         });
-      } else {
-        // eslint-disable-next-line react/no-did-mount-set-state
-        this.setState({
-          loaded: true,
-        });
+        await this.reloadForm(nextProps);
       }
     }
     componentWillUnmount() {
@@ -33,6 +26,18 @@ const connectForm = form => (Component) => {
       FormCollection.remove(this.form.name);
       this.setState({
         loaded: false,
+      });
+    }
+    async reloadForm(props) {
+      this.form = (isFunction(form) ? form : () => form)(props);
+      this.unsubscribe = this.form.store.subscribe(() => {
+        this.forceUpdate();
+      });
+      if (isFunction(this.form.loadPromise)) {
+        await this.form.load();
+      }
+      this.setState({
+        loaded: true,
       });
     }
     render() {
