@@ -37,40 +37,43 @@ import { Form, connectForm } from 'immutable-form';
 
 // This is just a mock promise for the sake of this code example, in reality this promise should originate from performing an async call to some api.
 const createUserPromise = Promise.resolve({
-  userId: '123'
-})
+  userId: '123',
+});
 
-const userForm = new Form('userForm', {
+// These props could be anything. This function returns a new Form as a function of props.
+const mapPropsToForm = ({
+  hasUsername,
+  hasPassword,
+}) => new Form('userForm', {
   fields: {
-    username: {
+    username: (hasUsername || undefined) && {
       // All these fields are optional,
       value: 'some value', // Set an initial value
       // Any validation function in validate which returns a string will cause a validation error. Each validation function receives the field value and the form reference as parameters.
       validate: [
         username => username.trim().length === 0 && 'Username cannot be be empty',
-      ]
-    }
-    password: {
+      ],
+    },
+    password: (hasPassword || undefined) && {
       validate: [
-        password => password.trim().length < 6 && 'Password must be longer than 6 characters'
-      ]
-    }
-  }
+        password => password.trim().length < 6 && 'Password must be longer than 6 characters',
+      ],
+    },
+  },
 })
 // Send a request to the server
 .setSubmit((form) => createUserPromise)
 // If the promise resolves, do something with the results
 .setOnSuccess(({userId}, form) => userId)
 // If the promise is rejected, do something.
-.setOnFailure((err, form) => err)
-
+.setOnFailure((err, form) => err);
 
 const UserForm = ({
   // fields is a an Immutable Map
   fields,
   // This is the `Form` object, you can use it do extra actions such submitting the form.
-  form
-}) =>
+  form,
+}) => (
   <div>
     <input
       type="text"
@@ -86,8 +89,9 @@ const UserForm = ({
     {fields.getIn(['password', 'errors'].first())}
     <button onClick={() => form.submit()} />
   </div>
+);
 
-export default connectForm(userForm)(UserForm);
+export default connectForm(mapPropsToForm)(UserForm);
 
 ```
 
@@ -102,19 +106,20 @@ const loadFormPromise = Promise.resolve({
   password: 'somepassword'
 });
 
+// Note that the below example does not use a function to create a new Form. See above for that use case.
 const userForm = new Form('userForm', {
   fields: {
     username: {
       validate: [
         username => username.trim().length === 0 && 'Username cannot be be empty',
-      ]
-    }
+      ],
+    },
     password: {
       validate: [
-        password => password.trim().length < 6 && 'Password must be longer than 6 characters'
-      ]
-    }
-  }
+        password => password.trim().length < 6 && 'Password must be longer than 6 characters',
+      ],
+    },
+  },
 })
 .setLoad(form => loadFormPromise.then(({ username, password }) => {
   // When the promise resolves with the requested data
@@ -136,7 +141,7 @@ If using `connectForm` the load promise will be called automatically in the comp
 import { Form, connectForm } from 'immutable-form';
 
 const Form = new Form('form', {}, {
-    logger: true, // Will enable redux-logger (false by default)
-    addToFormCollection: true, // Refrains from adding a reference to FormCollection, (true by default)
-})
+  logger: true, // Will enable redux-logger (false by default)
+  addToFormCollection: true, // Refrains from adding a reference to FormCollection, (true by default)
+});
 ```

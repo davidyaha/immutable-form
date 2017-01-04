@@ -174,6 +174,21 @@ class Form {
       },
     });
   }
+  addFieldValidator(field, validator) {
+    if (!this.fieldValidators[field]) {
+      this.fieldValidators[field] = [];
+    }
+    this.fieldValidators[field].push(validator);
+  }
+  removeFieldValidator(field, validator) {
+    const validators = this.fieldValidators[field];
+    if (validators) {
+      const index = validators.indexOf(validator);
+      if (index !== -1) {
+        validators.splice(index, 1);
+      }
+    }
+  }
   getField(field) {
     return this.store.getState().getIn(['form', 'fields', field], initialField);
   }
